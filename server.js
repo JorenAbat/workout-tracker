@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 // Check if required environment variables are set
-if (!process.env.LOGIN_USERNAME || !process.env.PASSWORD_HASH || !process.env.SESSION_SECRET || !process.env.CORS_ORIGIN) {
+if (!process.env.LOGIN_USERNAME || !process.env.PASSWORD_HASH || !process.env.SESSION_SECRET) {
     console.error('Error: Required environment variables are not set. Please check your .env file');
     process.exit(1);
 }
@@ -15,19 +15,26 @@ if (!process.env.LOGIN_USERNAME || !process.env.PASSWORD_HASH || !process.env.SE
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+// Determine if we're in production
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Configure CORS based on environment
+const corsOptions = {
+    origin: isProduction ? 'https://workout.jorenabat.com' : 'http://localhost:3000',
     credentials: true
-}));
+};
+app.use(cors(corsOptions));
+
+// Middleware
 app.use(express.json());
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // Set to true in production
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        secure: isProduction, // Set to true in production
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite: isProduction ? 'none' : 'lax' // Required for cross-site cookies in production
     }
 }));
 
@@ -43,9 +50,12 @@ const requireAuth = (req, res, next) => {
 // Serve static files from the root directory
 app.use(express.static(path.join(__dirname)));
 
-// Login endpoint
+// Login endpoint with more detailed error logging
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
+    
+    console.log('Login attempt from:', req.headers.origin);
+    console.log('Username provided:', username);
     
     const storedHash = process.env.PASSWORD_HASH;
     const isValid = await bcrypt.compare(password, storedHash);
@@ -53,9 +63,18 @@ app.post('/api/login', async (req, res) => {
     if (username === process.env.LOGIN_USERNAME && isValid) {
         req.session.authenticated = true;
         req.session.username = username;
+        console.log('Login successful for user:', username);
         res.json({ success: true });
     } else {
-        res.status(401).json({ message: 'Invalid username or password' });
+        console.log('Login failed - Username match:', username === process.env.LOGIN_USERNAME);
+        console.log('Password valid:', isValid);
+        res.status(401).json({ 
+            message: 'Invalid username or password',
+            details: isProduction ? undefined : {
+                usernameMatch: username === process.env.LOGIN_USERNAME,
+                passwordValid: isValid
+            }
+        });
     }
 });
 
