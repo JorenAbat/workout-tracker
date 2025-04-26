@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Progress Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .progress-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .exercise-stats {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .exercise-stats h2 {
+            margin-top: 0;
+        }
+
+        .exercise-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .exercise-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .exercise-item h4 {
+            margin: 0 0 10px 0;
+        }
+
+        .progress-chart {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .workout-history {
+            margin-top: 30px;
+        }
+
+        .history-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .history-date {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .history-exercises {
+            margin-top: 10px;
+        }
+
+        .history-exercise {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .history-exercise:last-child {
+            border-bottom: none;
+        }
+
+        .personal-bests-section {
+            margin-top: 30px;
+        }
+
+        .personal-bests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .workout-sections {
+            display: flex;
+            gap: 20px;
+        }
+
+        .warmup-section, .main-section, .cooldown-section {
+            flex: 1;
+        }
+
+        .exercise-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .workout-duration {
+            margin-top: 30px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .duration-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .duration-history {
+            margin-top: 20px;
+        }
+
+        .duration-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .duration-date {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .duration-time {
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="index.html">Home</a>
+            <a href="progress.html" class="active">Progress</a>
+        </div>
+    </nav>
+
+    <div class="progress-container">
+        <h1>Workout Progress</h1>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Current Streak</h3>
+                <div class="stat-value" id="currentStreak">0</div>
+                <p>Consecutive days of workouts</p>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Total Workouts</h3>
+                <div class="stat-value" id="totalWorkouts">0</div>
+                <p>Workouts completed</p>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Best Exercise</h3>
+                <div class="stat-value" id="bestExercise">-</div>
+                <p>Most improved exercise</p>
+            </div>
+        </div>
+
+        <div class="exercise-stats">
+            <h2>Exercise History</h2>
+            <div class="exercise-filters">
+                <button class="filter-btn active" data-category="all">All Exercises</button>
+                <button class="filter-btn" data-category="warmup">Warm-Up</button>
+                <button class="filter-btn" data-category="main">Main Workout</button>
+                <button class="filter-btn" data-category="cooldown">Cool-Down</button>
+            </div>
+            <div class="exercise-list" id="exerciseList">
+                <!-- Exercise items will be populated here -->
+            </div>
+        </div>
+
+        <div class="exercise-history">
+            <h2>Exercise Progress</h2>
+            <div id="exercise-progress">
+                <!-- Exercise progress will be populated here -->
+            </div>
+        </div>
+
+        <div class="workout-duration">
+            <h2>Workout Duration History</h2>
+            <div class="duration-stats">
+                <div class="stat-card">
+                    <h3>Average Duration</h3>
+                    <div class="stat-value" id="avgDuration">-</div>
+                    <p>Minutes per workout</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Shortest Workout</h3>
+                    <div class="stat-value" id="shortestDuration">-</div>
+                    <p>Minutes</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Longest Workout</h3>
+                    <div class="stat-value" id="longestDuration">-</div>
+                    <p>Minutes</p>
+                </div>
+            </div>
+            <div class="duration-history" id="durationHistory">
+                <!-- Duration history will be populated here -->
+            </div>
+        </div>
+
+        <div class="personal-bests-section">
+            <h2>Personal Bests</h2>
+            <div class="personal-bests-grid" id="personalBests">
+                <!-- Personal bests will be populated here -->
+            </div>
+        </div>
+
+        <div class="workout-history">
+            <h2>Recent Workouts</h2>
+            <div id="workoutHistory" class="workout-sections">
+                <div class="warmup-section">
+                    <h3>Warm-Up</h3>
+                    <div id="warmupHistory"></div>
+                </div>
+                <div class="main-section">
+                    <h3>Main Workout</h3>
+                    <div id="mainWorkoutHistory"></div>
+                </div>
+                <div class="cooldown-section">
+                    <h3>Cool-Down</h3>
+                    <div id="cooldownHistory"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:3000/api';
+
+        // Utility Functions
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                throw error;
+            }
+        }
+
+        async function postData(endpoint, data) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Error posting data:', error);
+                throw error;
+            }
+        }
+
+        // Data Loading Functions
+        async function loadCurrentStreak() {
+            try {
+                const data = await fetchData('/current-streak');
+                document.getElementById('currentStreak').textContent = data.streak;
+            } catch (error) {
+                console.error('Error loading streak:', error);
+            }
+        }
+
+        async function loadWorkoutHistory() {
+            try {
+                const history = await fetchData('/workout-history');
+                const warmupContainer = document.getElementById('warmupHistory');
+                const mainContainer = document.getElementById('mainWorkoutHistory');
+                const cooldownContainer = document.getElementById('cooldownHistory');
+
+                // Clear existing content
+                warmupContainer.innerHTML = '';
+                mainContainer.innerHTML = '';
+                cooldownContainer.innerHTML = '';
+
+                // Sort by date (newest first)
+                const sortedDates = Object.keys(history).sort((a, b) => new Date(b) - new Date(a));
+                
+                sortedDates.slice(0, 5).forEach(date => {
+                    const workouts = history[date];
+                    workouts.forEach(workout => {
+                        // Process each exercise and categorize based on name
+                        workout.exercises.forEach(exercise => {
+                            const exerciseItem = document.createElement('div');
+                            exerciseItem.className = 'history-exercise';
+                            exerciseItem.innerHTML = `
+                                <span>${exercise.name}</span>
+                                <span>${exercise.sets.length} sets</span>
+                            `;
+
+                            // Determine category based on exercise name
+                            if (exercise.name.includes('Arm circles') || 
+                                exercise.name.includes('Shoulder shrugs') || 
+                                exercise.name.includes('Light dumbbell front raises') || 
+                                exercise.name.includes('Torso twists') || 
+                                exercise.name.includes('Jumping jacks') || 
+                                exercise.name.includes('High knees') || 
+                                exercise.name.includes('Bodyweight squats') || 
+                                exercise.name.includes('Hip circles') || 
+                                exercise.name.includes('Leg swings') || 
+                                exercise.name.includes('Glute bridges') || 
+                                exercise.name.includes('Standing knee-to-elbow crunches') || 
+                                exercise.name.includes('Light kettlebell swings')) {
+                                warmupContainer.appendChild(exerciseItem);
+                            } else if (exercise.name.includes('Hamstring stretch') || 
+                                     exercise.name.includes('Glute stretch') || 
+                                     exercise.name.includes('Shoulder stretch') || 
+                                     exercise.name.includes('Cat-Cow stretch') || 
+                                     exercise.name.includes('Deep breathing')) {
+                                cooldownContainer.appendChild(exerciseItem);
+                            } else {
+                                mainContainer.appendChild(exerciseItem);
+                            }
+                        });
+                    });
+                });
+
+                // Update total workouts
+                document.getElementById('totalWorkouts').textContent = 
+                    Object.values(history).reduce((sum, workouts) => sum + workouts.length, 0);
+            } catch (error) {
+                console.error('Error loading workout history:', error);
+            }
+        }
+
+        async function loadExerciseStats() {
+            try {
+                const history = await fetchData('/workout-history');
+                const exerciseList = document.getElementById('exerciseList');
+                exerciseList.innerHTML = '';
+
+                // Collect all exercises and their stats
+                const exerciseStats = {};
+                Object.entries(history).forEach(([date, workouts]) => {
+                    workouts.forEach(workout => {
+                        workout.exercises.forEach(exercise => {
+                            const name = exercise.name;
+                            if (!exerciseStats[name]) {
+                                // Determine category based on exercise name
+                                let category = 'main';
+                                if (name.includes('Arm circles') || 
+                                    name.includes('Shoulder shrugs') || 
+                                    name.includes('Light dumbbell front raises') || 
+                                    name.includes('Torso twists') || 
+                                    name.includes('Jumping jacks') || 
+                                    name.includes('High knees') || 
+                                    name.includes('Bodyweight squats') || 
+                                    name.includes('Hip circles') || 
+                                    name.includes('Leg swings') || 
+                                    name.includes('Glute bridges') || 
+                                    name.includes('Standing knee-to-elbow crunches') || 
+                                    name.includes('Light kettlebell swings')) {
+                                    category = 'warmup';
+                                } else if (name.includes('Hamstring stretch') || 
+                                         name.includes('Glute stretch') || 
+                                         name.includes('Shoulder stretch') || 
+                                         name.includes('Cat-Cow stretch') || 
+                                         name.includes('Deep breathing')) {
+                                    category = 'cooldown';
+                                }
+
+                                exerciseStats[name] = {
+                                    totalSets: exercise.sets.length,
+                                    lastPerformed: date,
+                                    count: 0,
+                                    category: category
+                                };
+                            }
+                            exerciseStats[name].totalSets += exercise.sets.length;
+                            exerciseStats[name].count++;
+                            if (date > exerciseStats[name].lastPerformed) {
+                                exerciseStats[name].lastPerformed = date;
+                            }
+                        });
+                    });
+                });
+
+                // Display exercise stats
+                function displayExercises(category = 'all') {
+                    exerciseList.innerHTML = '';
+                    Object.entries(exerciseStats)
+                        .filter(([_, stats]) => category === 'all' || stats.category === category)
+                        .forEach(([name, stats]) => {
+                            const exerciseItem = document.createElement('div');
+                            exerciseItem.className = 'exercise-item';
+                            exerciseItem.innerHTML = `
+                                <h4>${name}</h4>
+                                <p>Category: ${stats.category}</p>
+                                <p>Total Sets: ${stats.totalSets}</p>
+                                <p>Times Performed: ${stats.count}</p>
+                                <p>Last Performed: ${new Date(stats.lastPerformed).toLocaleDateString()}</p>
+                            `;
+                            exerciseList.appendChild(exerciseItem);
+                        });
+                }
+
+                // Add event listeners to filter buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        displayExercises(btn.dataset.category);
+                    });
+                });
+
+                // Initial display
+                displayExercises();
+            } catch (error) {
+                console.error('Error loading exercise stats:', error);
+            }
+        }
+
+        async function loadWorkoutDurations() {
+            try {
+                const history = await fetchData('/workout-history');
+                const durations = [];
+                
+                Object.entries(history).forEach(([date, workouts]) => {
+                    workouts.forEach(workout => {
+                        if (workout.duration) {
+                            durations.push({
+                                date,
+                                duration: workout.duration
+                            });
+                        }
+                    });
+                });
+
+                // Calculate stats
+                if (durations.length > 0) {
+                    const totalDuration = durations.reduce((sum, w) => sum + w.duration, 0);
+                    const avgDuration = Math.round(totalDuration / durations.length);
+                    const shortestDuration = Math.min(...durations.map(w => w.duration));
+                    const longestDuration = Math.max(...durations.map(w => w.duration));
+
+                    document.getElementById('avgDuration').textContent = avgDuration;
+                    document.getElementById('shortestDuration').textContent = shortestDuration;
+                    document.getElementById('longestDuration').textContent = longestDuration;
+
+                    // Display duration history
+                    const durationHistory = document.getElementById('durationHistory');
+                    durationHistory.innerHTML = '';
+                    
+                    durations.sort((a, b) => new Date(b.date) - new Date(a.date))
+                        .forEach(workout => {
+                            const durationItem = document.createElement('div');
+                            durationItem.className = 'duration-item';
+                            durationItem.innerHTML = `
+                                <span class="duration-date">${new Date(workout.date).toLocaleDateString()}</span>
+                                <span class="duration-time">${workout.duration} minutes</span>
+                            `;
+                            durationHistory.appendChild(durationItem);
+                        });
+                } else {
+                    document.getElementById('avgDuration').textContent = '-';
+                    document.getElementById('shortestDuration').textContent = '-';
+                    document.getElementById('longestDuration').textContent = '-';
+                    document.getElementById('durationHistory').innerHTML = '<p>No workout durations recorded yet.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading workout durations:', error);
+            }
+        }
+
+        async function loadPersonalBests() {
+            try {
+                const personalBests = await fetchData('/personal-bests');
+                const personalBestsContainer = document.getElementById('personalBests');
+                personalBestsContainer.innerHTML = '';
+
+                if (Object.keys(personalBests).length === 0) {
+                    personalBestsContainer.innerHTML = '<p>No personal bests recorded yet.</p>';
+                    return;
+                }
+
+                Object.entries(personalBests).forEach(([exercise, best]) => {
+                    const bestCard = document.createElement('div');
+                    bestCard.className = 'stat-card';
+                    bestCard.innerHTML = `
+                        <h3>${exercise}</h3>
+                        <div class="stat-value">${best.weight} kg</div>
+                        <p>${best.reps} reps (${best.volume} kg total volume)</p>
+                        <p>Set on: ${new Date(best.date).toLocaleDateString()}</p>
+                    `;
+                    personalBestsContainer.appendChild(bestCard);
+                });
+            } catch (error) {
+                console.error('Error loading personal bests:', error);
+                document.getElementById('personalBests').innerHTML = '<p>Error loading personal bests.</p>';
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCurrentStreak();
+            loadWorkoutHistory();
+            loadExerciseStats();
+            loadWorkoutDurations();
+            loadPersonalBests();
+        });
+    </script>
+</body>
+</html> 

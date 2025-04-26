@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Routine Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">💪 Workout Tracker</div>
+        <div class="nav-links">
+            <a href="#schedule" class="active">Schedule</a>
+            <a href="#exercises">Exercises</a>
+            <a href="#equipment">Equipment</a>
+            <a href="progress.html">Progress</a>
+            <a href="database-test.html">Database Test</a>
+            <button id="logoutBtn" class="logout-btn">Logout</button>
+        </div>
+    </nav>
+
+    <main>
+        <section id="schedule" class="section">
+            <h2>Weekly Schedule</h2>
+            <div class="schedule-grid">
+                <div class="day-card" data-day="monday">
+                    <h3>Monday</h3>
+                    <p>Upper Body</p>
+                    <div class="duration">1 Hour</div>
+                    <button class="start-workout">Start Workout</button>
+                </div>
+                <div class="day-card" data-day="tuesday">
+                    <h3>Tuesday</h3>
+                    <p>Lower Body</p>
+                    <div class="duration">1 Hour</div>
+                    <button class="start-workout">Start Workout</button>
+                </div>
+                <div class="day-card rest-day">
+                    <h3>Wednesday</h3>
+                    <p>Rest Day</p>
+                </div>
+                <div class="day-card" data-day="thursday">
+                    <h3>Thursday</h3>
+                    <p>Core & Conditioning</p>
+                    <div class="duration">1 Hour</div>
+                    <button class="start-workout">Start Workout</button>
+                </div>
+                <div class="day-card" data-day="friday">
+                    <h3>Friday</h3>
+                    <p>Full Body</p>
+                    <div class="duration">1 Hour</div>
+                    <button class="start-workout">Start Workout</button>
+                </div>
+                <div class="day-card rest-day">
+                    <h3>Saturday</h3>
+                    <p>Rest Day</p>
+                </div>
+                <div class="day-card rest-day">
+                    <h3>Sunday</h3>
+                    <p>Rest Day</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="equipment" class="section">
+            <h2>Equipment Needed</h2>
+            <div class="equipment-grid">
+                <div class="equipment-card">
+                    <i class="fas fa-dumbbell"></i>
+                    <h3>Dumbbells</h3>
+                    <p>7.5kg (16.5 lbs)</p>
+                    <p>Quantity: 2</p>
+                </div>
+                <div class="equipment-card">
+                    <i class="fas fa-weight"></i>
+                    <h3>Kettlebell</h3>
+                    <p>9kg (20 lbs)</p>
+                    <p>Quantity: 1</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="exercises" class="section">
+            <h2>Exercise Library</h2>
+            <div class="exercise-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="upper">Upper Body</button>
+                <button class="filter-btn" data-filter="lower">Lower Body</button>
+                <button class="filter-btn" data-filter="core">Core</button>
+                <button class="filter-btn" data-filter="full">Full Body</button>
+            </div>
+            <div class="exercise-grid">
+                <!-- Exercise cards will be dynamically populated -->
+            </div>
+        </section>
+
+        <section id="progress" class="section">
+            <h2>Progress Tracking</h2>
+            <div class="progress-section">
+                <div class="progress-card">
+                    <h3>Weekly Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress"></div>
+                    </div>
+                    <p>0/5 workouts completed</p>
+                </div>
+                <div class="progress-card">
+                    <h3>Monthly Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress"></div>
+                    </div>
+                    <p>0 workouts completed this month</p>
+                </div>
+                <div class="progress-card">
+                    <h3>Current Streak</h3>
+                    <div class="streak-count">0 days</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="workout-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="workout-title">Workout Details</h2>
+            <div class="workout-timer">
+                <span id="timer">00:00</span>
+            </div>
+            <div class="workout-steps">
+                <div class="warm-up">
+                    <h3>Warm-Up (5 minutes)</h3>
+                    <ul id="warmup-list"></ul>
+                </div>
+                <div class="main-exercises">
+                    <h3>Main Exercises</h3>
+                    <ul id="exercises-list"></ul>
+                </div>
+                <div class="cool-down">
+                    <h3>Cool-Down (5 minutes)</h3>
+                    <ul id="cooldown-list"></ul>
+                </div>
+            </div>
+            <button id="start-timer" class="btn-primary">Start Timer</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>💪 Stay consistent, stay strong!</p>
+    </footer>
+
+    <script>
+        // Check authentication status
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth-status');
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login.html';
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+        });
+
+        // Check auth on page load
+        checkAuth();
+    </script>
+    <script src="script.js"></script>
+</body>
+</html> 
