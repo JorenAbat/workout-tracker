@@ -468,4 +468,7 @@ process.on('SIGINT', () => {
         console.log('Server closed');
         process.exit(0);
     });
-}); 
+});
+
+console.log('Full env PASSWORD_HASH:', JSON.stringify(process.env.PASSWORD_HASH));
+console.log('Length:', process.env.PASSWORD_HASH.length); 
