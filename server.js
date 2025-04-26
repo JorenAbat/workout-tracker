@@ -41,10 +41,14 @@ app.use(session({
 // Authentication middleware
 const requireAuth = (req, res, next) => {
     if (req.session && req.session.authenticated) {
-        next();
-    } else {
-        res.redirect('/login.html');
+        return next();
     }
+    // If the request is for an API endpoint, return 401 Unauthorized
+    if (req.originalUrl.startsWith('/api/')) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    // Otherwise, redirect to login page
+    res.redirect('/login.html');
 };
 
 // Serve static files from the root directory

@@ -259,15 +259,17 @@ let personalBests = JSON.parse(localStorage.getItem('personalBests')) || {};
 
 // Standardized API call functions
 async function fetchData(endpoint) {
-        try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return await response.json();
-        } catch (error) {
-                console.error('Error fetching data:', error);
-                throw error;
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            credentials: 'include'
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        throw error;
     }
 }
 
@@ -278,7 +280,8 @@ async function postData(endpoint, data) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
+            credentials: 'include'
         });
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
