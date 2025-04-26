@@ -56,9 +56,18 @@ app.post('/api/login', async (req, res) => {
     
     console.log('Login attempt from:', req.headers.origin);
     console.log('Username provided:', username);
+    console.log('Stored hash:', process.env.PASSWORD_HASH);
+    console.log('Password length:', password.length);
     
     const storedHash = process.env.PASSWORD_HASH;
     const isValid = await bcrypt.compare(password, storedHash);
+    
+    // Log the comparison result in detail
+    console.log('Password comparison details:', {
+        storedHashLength: storedHash.length,
+        storedHashPrefix: storedHash.substring(0, 10) + '...',
+        isValid: isValid
+    });
     
     if (username === process.env.LOGIN_USERNAME && isValid) {
         req.session.authenticated = true;
